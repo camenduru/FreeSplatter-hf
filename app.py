@@ -1,6 +1,4 @@
 import os
-if 'OMP_NUM_THREADS' not in os.environ:
-    os.environ['OMP_NUM_THREADS'] = '16'
 import torch
 import gradio as gr
 from functools import partial
@@ -80,4 +78,4 @@ with gr.Blocks(analytics_enabled=False, title='FreeSplatter Demo', theme=gr.them
 
     gr.Markdown(_CITE_)
 
-    demo.launch()
+demo.launch()
