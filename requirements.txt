@@ -6,6 +6,7 @@ einops
 plotly
 omegaconf
 trimesh
+opencv-python
 gradio==5.5.0
 huggingface_hub[cli]==0.26.2
 transformers==4.46.1
