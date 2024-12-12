@@ -1,6 +1,7 @@
 torch==2.1.0
 torchvision==0.16.0
 torchaudio==2.1.0
+numpy==1.26.1
 pytorch-lightning==2.4.0
 einops
 plotly
@@ -25,7 +26,6 @@ xatlas
 pygltflib
 fpsample
 fast-simplification
-numpy==1.26.1
 MiniballCpp
 git+https://github.com/ashawkey/diff-gaussian-rasterization.git
 git+https://github.com/hbb1/diff-surfel-rasterization.git
