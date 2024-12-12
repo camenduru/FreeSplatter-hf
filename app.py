@@ -49,7 +49,7 @@ If you have any questions, feel free to open a discussion or contact us at <b>bl
 """
 
 
-with gr.Blocks(analytics_enabled=False, title='FreeSplatter Demo', theme=gr.themes.Ocean()) as demo:
+with gr.Blocks(analytics_enabled=False, title='FreeSplatter Demo') as demo:
     gr.Markdown(_HEADER_)
 
     with gr.Tabs() as main_tabs:
