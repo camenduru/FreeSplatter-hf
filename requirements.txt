@@ -8,6 +8,7 @@ pytorch-lightning==2.4.0
 einops
 plotly
 omegaconf
+rembg
 trimesh
 opencv-python
 gradio==4.44.1
