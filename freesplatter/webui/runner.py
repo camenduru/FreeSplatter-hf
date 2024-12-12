@@ -3,6 +3,7 @@ import os
 import json
 import uuid
 import time
+import rembg
 import numpy as np
 import torch
 import fpsample
@@ -75,11 +76,13 @@ class FreeSplatterRunner:
         self.device = device
 
         # background remover
-        self.rembg = AutoModelForImageSegmentation.from_pretrained(
-            "briaai/RMBG-2.0",
-            trust_remote_code=True,
-        )
-        self.rembg.eval()
+        # self.rembg = AutoModelForImageSegmentation.from_pretrained(
+        #     "briaai/RMBG-2.0",
+        #     trust_remote_code=True,
+        #     cache_dir='ckpts/',
+        # )
+        # self.rembg.eval()
+        self.rembg = rembg.new_session('birefnet-general')
 
         # diffusion models
         pipeline = DiffusionPipeline.from_pretrained(
@@ -158,7 +161,7 @@ class FreeSplatterRunner:
         torch.cuda.empty_cache()
 
         if do_rembg:
-            image = remove_background(image, self.rembg)
+            image = remove_background(self.rembg, image)
 
         return image
 
