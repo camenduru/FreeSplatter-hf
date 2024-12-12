@@ -297,7 +297,7 @@ class MeshRenderer(nn.Module):
         assert isinstance(ssaa, int) and ssaa >= 1
         self.ssaa = ssaa
         self.texture_filter = texture_filter
-        self.glctx = dr.RasterizeCudaContext(device=device)
+        self.glctx = dr.RasterizeGLContext(output_db=False)
 
     def forward(self, meshes, poses, intrinsics, h, w, shading_fun=None,
                 dilate_edges=0, normal_bg=[0.5, 0.5, 1.0], aa=True, render_vc=False):
