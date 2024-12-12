@@ -148,7 +148,8 @@ class FreeSplatterRunner:
             near=0.01,
             far=100,
             ssaa=1,
-            texture_filter='linear-mipmap-linear').to(device)
+            texture_filter='linear-mipmap-linear',
+            device=device).to(device)
 
     @torch.inference_mode()
     def run_segmentation(
