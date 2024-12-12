@@ -10,7 +10,7 @@ plotly
 omegaconf
 trimesh
 opencv-python
-gradio==5.8.0
+gradio==4.44.1
 huggingface_hub[cli]==0.26.2
 transformers==4.46.1
 tokenizers==0.20.1
