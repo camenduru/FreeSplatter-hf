@@ -56,24 +56,27 @@ If you have any questions, feel free to open a discussion or contact us at <b>bl
 
 with gr.Blocks(analytics_enabled=False, title='FreeSplatter Demo', theme=gr.themes.Ocean()) as demo:
     gr.Markdown(_HEADER_)
-    gr.Markdown(_IMG_TO_3D_HELP_)
 
-    with gr.Tabs() as sub_tabs_img_to_3d:
-        with gr.TabItem('Hunyuan3D Std', id='tab_hunyuan3d_std'):
-            _, var_img_to_3d_hunyuan3d_std = create_interface_img_to_3d(
-                runner.run_segmentation,
-                runner.run_img_to_3d, 
-                model='Hunyuan3D Std')
-        with gr.TabItem('Zero123++ v1.1', id='tab_zero123plus_v11'):
-            _, var_img_to_3d_zero123plus_v11 = create_interface_img_to_3d(
-                runner.run_segmentation,
-                runner.run_img_to_3d, 
-                model='Zero123++ v1.1')
-        with gr.TabItem('Zero123++ v1.2', id='tab_zero123plus_v12'):
-            _, var_img_to_3d_zero123plus_v12 = create_interface_img_to_3d(
-                runner.run_segmentation,
-                runner.run_img_to_3d, 
-                model='Zero123++ v1.2')
+    with gr.Tabs() as main_tabs:
+        with gr.TabItem('Image-to-3D', id='tab_img_to_3d'):
+            gr.Markdown(_IMG_TO_3D_HELP_)
+
+            with gr.Tabs() as sub_tabs_img_to_3d:
+                with gr.TabItem('Hunyuan3D Std', id='tab_hunyuan3d_std'):
+                    _, var_img_to_3d_hunyuan3d_std = create_interface_img_to_3d(
+                        runner.run_segmentation,
+                        runner.run_img_to_3d, 
+                        model='Hunyuan3D Std')
+                with gr.TabItem('Zero123++ v1.1', id='tab_zero123plus_v11'):
+                    _, var_img_to_3d_zero123plus_v11 = create_interface_img_to_3d(
+                        runner.run_segmentation,
+                        runner.run_img_to_3d, 
+                        model='Zero123++ v1.1')
+                with gr.TabItem('Zero123++ v1.2', id='tab_zero123plus_v12'):
+                    _, var_img_to_3d_zero123plus_v12 = create_interface_img_to_3d(
+                        runner.run_segmentation,
+                        runner.run_img_to_3d, 
+                        model='Zero123++ v1.2')
 
     gr.Markdown(_CITE_)
 
