@@ -1,3 +1,4 @@
+import spaces
 import os
 import json
 import uuid
@@ -78,7 +79,7 @@ class FreeSplatterRunner:
             "briaai/RMBG-2.0",
             trust_remote_code=True,
             cache_dir='ckpts/',
-        ).to(device)
+        )
         self.rembg.eval()
 
         # diffusion models
@@ -162,6 +163,7 @@ class FreeSplatterRunner:
 
         return image
 
+    @spaces.GPU
     def run_img_to_3d(
         self, 
         image_rgba, 
@@ -238,7 +240,8 @@ class FreeSplatterRunner:
             images, alphas, legends=legends, gs_type=gs_type, mesh_reduction=mesh_reduction)
 
         return images_vis, gs_vis_path, video_path, mesh_fine_path, fig
-    
+
+    @spaces.GPU
     def run_views_to_3d(
         self, 
         image_files, 
@@ -459,6 +462,7 @@ class FreeSplatterRunner:
         return fig
     
     # FreeSplatter-S
+    @spaces.GPU
     def run_views_to_scene(
         self, 
         image1,
