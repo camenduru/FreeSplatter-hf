@@ -76,13 +76,12 @@ class FreeSplatterRunner:
         self.device = device
 
         # background remover
-        # self.rembg = AutoModelForImageSegmentation.from_pretrained(
-        #     "briaai/RMBG-2.0",
-        #     trust_remote_code=True,
-        #     cache_dir='ckpts/',
-        # )
-        # self.rembg.eval()
-        self.rembg = rembg.new_session('birefnet-general')
+        self.rembg = AutoModelForImageSegmentation.from_pretrained(
+            "ZhengPeng7/BiRefNet",
+            trust_remote_code=True,
+        )
+        self.rembg.eval()
+        # self.rembg = rembg.new_session('birefnet-general')
 
         # diffusion models
         pipeline = DiffusionPipeline.from_pretrained(
