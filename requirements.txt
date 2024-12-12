@@ -34,5 +34,4 @@ numpy<2.0
 
 https://huggingface.co/spaces/TencentARC/FreeSplatter/resolve/main/wheels/diff_gaussian_rasterization-0.0.0-cp310-cp310-linux_x86_64.whl?download=true
 https://huggingface.co/spaces/TencentARC/FreeSplatter/resolve/main/wheels/diff_surfel_rasterization-0.0.1-cp310-cp310-linux_x86_64.whl?download=true
-# https://huggingface.co/spaces/JeffreyXiang/TRELLIS/resolve/main/wheels/nvdiffrast-0.3.3-cp310-cp310-linux_x86_64.whl?download=true
-nvdiffrast==0.3.1
+https://huggingface.co/spaces/JeffreyXiang/TRELLIS/resolve/main/wheels/nvdiffrast-0.3.3-cp310-cp310-linux_x86_64.whl?download=true
