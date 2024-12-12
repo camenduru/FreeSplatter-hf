@@ -144,12 +144,12 @@ class FreeSplatterRunner:
         self.freesplatter_scene = model.eval().to(device)
 
         # mesh optimizer
-        self.mesh_renderer = MeshRenderer(
-            near=0.01,
-            far=100,
-            ssaa=1,
-            texture_filter='linear-mipmap-linear',
-            device=device).to(device)
+        # self.mesh_renderer = MeshRenderer(
+        #     near=0.01,
+        #     far=100,
+        #     ssaa=1,
+        #     texture_filter='linear-mipmap-linear',
+        #     device=device).to(device)
 
     @torch.inference_mode()
     def run_segmentation(
@@ -375,45 +375,76 @@ class FreeSplatterRunner:
             t4 = time.time()
 
         # optimize texture
+        # cam_pos = c2ws_fusion[:, :3, 3].cpu().numpy()
+        # cam_inds = torch.from_numpy(fpsample.fps_sampling(cam_pos, 16).astype(int)).to(device=device)
+
+        # alphas_bake = alphas_fusion[cam_inds]
+        # images_bake = (images_fusion[cam_inds] - (1 - alphas_bake)) / alphas_bake.clamp(min=1e-6)
+
+        # out_mesh = Mesh.load(str(mesh_path), auto_uv=False, device='cpu')
+        # max_faces = 50000
+        # mesh_reduction = max(1 - max_faces / out_mesh.f.shape[0], mesh_reduction)
+        # mesh_verts_, mesh_faces_ = fast_simplification.simplify(
+        #     out_mesh.v.numpy(), out_mesh.f.numpy(), target_reduction=mesh_reduction)
+        # mesh_verts = out_mesh.v.new_tensor(mesh_verts_, dtype=torch.float32).requires_grad_(False)
+        # mesh_faces = out_mesh.f.new_tensor(mesh_faces_).requires_grad_(False)
+        # out_mesh = Mesh(v=mesh_verts, f=mesh_faces)
+        # out_mesh.auto_normal()
+        # out_mesh.auto_uv()
+        # out_mesh = out_mesh.to(device)
+
+        # intrinsics = fxfycxcy_fusion[0:1].clone()
+        # intrinsics[..., [0, 2]] *= images_bake.shape[-2]
+        # intrinsics[..., [1, 3]] *= images_bake.shape[-3]
+
+        # out_mesh = self.mesh_renderer.bake_multiview(
+        #     [out_mesh], 
+        #     images_bake.unsqueeze(0), 
+        #     alphas_bake.unsqueeze(0), 
+        #     c2ws_fusion[cam_inds].unsqueeze(0), 
+        #     intrinsics.unsqueeze(0),
+        # )[0]
+        # mesh_fine_path = os.path.join(self.output_dir, 'mesh.glb')
+        # # align mesh orientation
+        # out_mesh.v = out_mesh.v.clone()
+        # out_mesh.vn = out_mesh.vn.clone()
+        # out_mesh.v[..., 0] = -out_mesh.v[..., 0]
+        # out_mesh.vn[..., 0] = -out_mesh.vn[..., 0]
+        # out_mesh.v[..., [1, 2]] = out_mesh.v[..., [2, 1]]
+        # out_mesh.vn[..., [1, 2]] = out_mesh.vn[..., [2, 1]]
+
+        # out_mesh.write(mesh_fine_path, flip_yz=False)
+        # print(f"Save optimized mesh at {mesh_fine_path}")
+        # t5 = time.time()
+
+        # optimize texture
+        from freesplatter.utils.mesh_optim import optimize_mesh
         cam_pos = c2ws_fusion[:, :3, 3].cpu().numpy()
         cam_inds = torch.from_numpy(fpsample.fps_sampling(cam_pos, 16).astype(int)).to(device=device)
 
         alphas_bake = alphas_fusion[cam_inds]
         images_bake = (images_fusion[cam_inds] - (1 - alphas_bake)) / alphas_bake.clamp(min=1e-6)
 
+        fxfycxcy = fxfycxcy_fusion[cam_inds].clone()
+        intrinsics = torch.eye(3).unsqueeze(0).repeat(len(cam_inds), 1, 1).to(fxfycxcy)
+        intrinsics[:, 0, 0] = fxfycxcy[:, 0]
+        intrinsics[:, 0, 2] = fxfycxcy[:, 2]
+        intrinsics[:, 1, 1] = fxfycxcy[:, 1]
+        intrinsics[:, 1, 2] = fxfycxcy[:, 3]
+
         out_mesh = Mesh.load(str(mesh_path), auto_uv=False, device='cpu')
-        max_faces = 50000
-        mesh_reduction = max(1 - max_faces / out_mesh.f.shape[0], mesh_reduction)
-        mesh_verts_, mesh_faces_ = fast_simplification.simplify(
-            out_mesh.v.numpy(), out_mesh.f.numpy(), target_reduction=mesh_reduction)
-        mesh_verts = out_mesh.v.new_tensor(mesh_verts_, dtype=torch.float32).requires_grad_(False)
-        mesh_faces = out_mesh.f.new_tensor(mesh_faces_).requires_grad_(False)
-        out_mesh = Mesh(v=mesh_verts, f=mesh_faces)
-        out_mesh.auto_normal()
-        out_mesh.auto_uv()
-        out_mesh = out_mesh.to(device)
-
-        intrinsics = fxfycxcy_fusion[0:1].clone()
-        intrinsics[..., [0, 2]] *= images_bake.shape[-2]
-        intrinsics[..., [1, 3]] *= images_bake.shape[-3]
-
-        out_mesh = self.mesh_renderer.bake_multiview(
-            [out_mesh], 
-            images_bake.unsqueeze(0), 
-            alphas_bake.unsqueeze(0), 
-            c2ws_fusion[cam_inds].unsqueeze(0), 
-            intrinsics.unsqueeze(0),
-        )[0]
+        out_mesh = optimize_mesh(
+            out_mesh, 
+            images_bake, 
+            alphas_bake.squeeze(-1), 
+            c2ws_fusion[cam_inds].inverse(), 
+            intrinsics,
+            simplify=mesh_reduction,
+            verbose=False
+        )
         mesh_fine_path = os.path.join(self.output_dir, 'mesh.glb')
-        # align mesh orientation
-        out_mesh.v = out_mesh.v.clone()
-        out_mesh.vn = out_mesh.vn.clone()
-        out_mesh.v[..., 0] = -out_mesh.v[..., 0]
-        out_mesh.vn[..., 0] = -out_mesh.vn[..., 0]
-        out_mesh.v[..., [1, 2]] = out_mesh.v[..., [2, 1]]
-        out_mesh.vn[..., [1, 2]] = out_mesh.vn[..., [2, 1]]
 
-        out_mesh.write(mesh_fine_path, flip_yz=False)
+        out_mesh.export(mesh_fine_path)
         print(f"Save optimized mesh at {mesh_fine_path}")
         t5 = time.time()
 
