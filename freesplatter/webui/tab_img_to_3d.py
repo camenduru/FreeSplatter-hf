@@ -92,10 +92,10 @@ def create_interface_img_to_3d(segmentation_api, freesplatter_api, model='Zero12
                         var_dict['mesh_reduction'] = gr.Slider(
                             label="Mesh simplification ratio",
                             info='Larger ratio leads to less faces',
-                            minimum=0.,
-                            maximum=0.9,
-                            value=0.7,
-                            step=0.1,
+                            minimum=0.7,
+                            maximum=0.95,
+                            value=0.8,
+                            step=0.05,
                         )
                 with gr.Row(equal_height=False):
                     var_dict['run_btn'] = gr.Button('Generate', variant='primary', scale=2)
