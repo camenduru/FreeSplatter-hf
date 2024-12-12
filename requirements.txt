@@ -28,6 +28,6 @@ fast-simplification
 MiniballCpp
 numpy<2.0
 
-git+https://github.com/ashawkey/diff-gaussian-rasterization.git
-git+https://github.com/hbb1/diff-surfel-rasterization.git
+https://huggingface.co/spaces/TencentARC/FreeSplatter/resolve/main/wheels/diff_gaussian_rasterization-0.0.0-cp310-cp310-linux_x86_64.whl?download=true
+https://huggingface.co/spaces/TencentARC/FreeSplatter/resolve/main/wheels/diff_surfel_rasterization-0.0.1-cp310-cp310-linux_x86_64.whl?download=true
 git+https://github.com/NVlabs/nvdiffrast.git
