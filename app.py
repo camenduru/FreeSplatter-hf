@@ -1,4 +1,6 @@
 import os
+if 'OMP_NUM_THREADS' not in os.environ:
+    os.environ['OMP_NUM_THREADS'] = '16'
 import torch
 import gradio as gr
 from functools import partial
