@@ -16,7 +16,7 @@ from omegaconf import OmegaConf
 from einops import rearrange
 from scipy.spatial.transform import Rotation
 from safetensors import safe_open
-from huggingface_hub import hf_hub_download
+from huggingface_hub import hf_hub_download, snapshot_download
 
 from transformers import AutoModelForImageSegmentation
 from diffusers import DiffusionPipeline, EulerAncestralDiscreteScheduler
@@ -78,7 +78,6 @@ class FreeSplatterRunner:
         self.rembg = AutoModelForImageSegmentation.from_pretrained(
             "briaai/RMBG-2.0",
             trust_remote_code=True,
-            cache_dir='ckpts/',
         )
         self.rembg.eval()
 
@@ -87,7 +86,6 @@ class FreeSplatterRunner:
             "sudo-ai/zero123plus-v1.1", 
             custom_pipeline="sudo-ai/zero123plus-pipeline",
             torch_dtype=torch.float16,
-            cache_dir="ckpts/",
         )
         pipeline.scheduler = EulerAncestralDiscreteScheduler.from_config(
             pipeline.scheduler.config, timestep_spacing='trailing'
@@ -98,15 +96,15 @@ class FreeSplatterRunner:
             "sudo-ai/zero123plus-v1.2", 
             custom_pipeline="sudo-ai/zero123plus-pipeline",
             torch_dtype=torch.float16,
-            cache_dir="ckpts/",
         )
         pipeline.scheduler = EulerAncestralDiscreteScheduler.from_config(
             pipeline.scheduler.config, timestep_spacing='trailing'
         )
         self.zero123plus_v12 = pipeline.to(device)
 
+        download_dir = snapshot_download('tencent/Hunyuan3D-1', repo_type='model')
         pipeline = HunYuan3D_MVD_Std_Pipeline.from_pretrained(
-            './ckpts/Hunyuan3D-1/mvd_std',
+            os.path.join(download_dir, 'mvd_std'),
             torch_dtype=torch.float16,
             use_safetensors=True,
         )
@@ -114,7 +112,7 @@ class FreeSplatterRunner:
 
         # freesplatter
         config_file = 'configs/freesplatter-object.yaml'
-        ckpt_path = hf_hub_download('TencentARC/FreeSplatter', repo_type='model', filename='freesplatter-object.safetensors', local_dir='./ckpts/FreeSplatter')
+        ckpt_path = hf_hub_download('TencentARC/FreeSplatter', repo_type='model', filename='freesplatter-object.safetensors')
         model = instantiate_from_config(OmegaConf.load(config_file).model)
         state_dict = {}
         with safe_open(ckpt_path, framework="pt", device="cpu") as f:
@@ -124,7 +122,7 @@ class FreeSplatterRunner:
         self.freesplatter = model.eval().to(device)
 
         config_file = 'configs/freesplatter-object-2dgs.yaml'
-        ckpt_path = hf_hub_download('TencentARC/FreeSplatter', repo_type='model', filename='freesplatter-object-2dgs.safetensors', local_dir='./ckpts/FreeSplatter')
+        ckpt_path = hf_hub_download('TencentARC/FreeSplatter', repo_type='model', filename='freesplatter-object-2dgs.safetensors')
         model = instantiate_from_config(OmegaConf.load(config_file).model)
         state_dict = {}
         with safe_open(ckpt_path, framework="pt", device="cpu") as f:
@@ -134,7 +132,7 @@ class FreeSplatterRunner:
         self.freesplatter_2dgs = model.eval().to(device)
 
         config_file = 'configs/freesplatter-scene.yaml'
-        ckpt_path = hf_hub_download('TencentARC/FreeSplatter', repo_type='model', filename='freesplatter-scene.safetensors', local_dir='./ckpts/FreeSplatter')
+        ckpt_path = hf_hub_download('TencentARC/FreeSplatter', repo_type='model', filename='freesplatter-scene.safetensors')
         model = instantiate_from_config(OmegaConf.load(config_file).model)
         state_dict = {}
         with safe_open(ckpt_path, framework="pt", device="cpu") as f:
