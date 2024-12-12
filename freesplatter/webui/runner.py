@@ -161,7 +161,7 @@ class FreeSplatterRunner:
         torch.cuda.empty_cache()
 
         if do_rembg:
-            image = remove_background(self.rembg, image)
+            image = remove_background(image, self.rembg)
 
         return image
 
