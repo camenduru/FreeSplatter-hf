@@ -29,6 +29,9 @@ _IMG_TO_3D_HELP_ = '''
 - Try clicking the \U0001f3b2\ufe0f button to use a different `Random seed` (default: 42) for diverse outputs.
 - In most cases, using `2DGS` leads to better mesh geometry than `3DGS`. Please refer to the [2DGS paper](https://arxiv.org/abs/2403.17888).
 - You can adjust the views used for reconstruction to alleviate the blurry texture problem caused by multi-view inconsistency.
+
+❗️❗️❗️**NOTE:**  
+We are dealing with some bugs related to the ZeroGPU environment, stay tuned!
 '''
 
 _CITE_ = r"""
