@@ -8,13 +8,8 @@ from huggingface_hub import snapshot_download
 
 from freesplatter.webui.runner import FreeSplatterRunner
 from freesplatter.webui.tab_img_to_3d import create_interface_img_to_3d
-from freesplatter.webui.tab_views_to_3d import create_interface_views_to_3d
-from freesplatter.webui.tab_views_to_scene import create_interface_views_to_scene
 
 
-os.system('nvidia-smi')
-os.system('nvcc -V')
-os.system('ls /usr/local/')
 torch.set_grad_enabled(False)
 device = torch.device('cuda')
 runner = FreeSplatterRunner(device)
