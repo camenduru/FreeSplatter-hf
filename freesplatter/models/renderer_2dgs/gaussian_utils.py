@@ -70,6 +70,13 @@ def build_scaling_rotation(s, r):
     return L
 
 
+def build_covariance_from_scaling_rotation(scaling, scaling_modifier, rotation):
+    L = build_scaling_rotation(scaling_modifier * scaling, rotation)
+    actual_covariance = L @ L.transpose(1, 2)
+    symm = strip_symmetric(actual_covariance)
+    return symm
+
+
 def depths_to_points(view, depthmap):
     c2w = (view.world_view_transform.T).inverse()
     W, H = view.w, view.h
@@ -161,11 +168,6 @@ class Camera(nn.Module):
 
 class GaussianModel:
     def setup_functions(self, scaling_activation_type='sigmoid', scale_min_act=0.001, scale_max_act=0.3, scale_multi_act=0.1):
-        def build_covariance_from_scaling_rotation(scaling, scaling_modifier, rotation):
-            L = build_scaling_rotation(scaling_modifier * scaling, rotation)
-            actual_covariance = L @ L.transpose(1, 2)
-            symm = strip_symmetric(actual_covariance)
-            return symm
 
         if scaling_activation_type == 'exp':
             self.scaling_activation = torch.exp
