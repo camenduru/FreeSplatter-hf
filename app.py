@@ -2,12 +2,32 @@ import os
 if 'OMP_NUM_THREADS' not in os.environ:
     os.environ['OMP_NUM_THREADS'] = '16'
 import torch
+import subprocess
 import gradio as gr
 from functools import partial
 from huggingface_hub import snapshot_download
 
 from freesplatter.webui.runner import FreeSplatterRunner
 from freesplatter.webui.tab_img_to_3d import create_interface_img_to_3d
+
+
+def install_cuda_toolkit():
+    CUDA_TOOLKIT_URL = "https://developer.download.nvidia.com/compute/cuda/12.1.0/local_installers/cuda_12.1.0_530.30.02_linux.run"
+    CUDA_TOOLKIT_FILE = "/tmp/%s" % os.path.basename(CUDA_TOOLKIT_URL)
+    subprocess.call(["wget", "-q", CUDA_TOOLKIT_URL, "-O", CUDA_TOOLKIT_FILE])
+    subprocess.call(["chmod", "+x", CUDA_TOOLKIT_FILE])
+    subprocess.call([CUDA_TOOLKIT_FILE, "--silent", "--toolkit"])
+
+    os.environ["CUDA_HOME"] = "/usr/local/cuda"
+    os.environ["PATH"] = "%s/bin:%s" % (os.environ["CUDA_HOME"], os.environ["PATH"])
+    os.environ["LD_LIBRARY_PATH"] = "%s/lib:%s" % (
+        os.environ["CUDA_HOME"],
+        "" if "LD_LIBRARY_PATH" not in os.environ else os.environ["LD_LIBRARY_PATH"],
+    )
+    # Fix: arch_list[-1] += '+PTX'; IndexError: list index out of range
+    os.environ["TORCH_CUDA_ARCH_LIST"] = "8.0;8.6"
+
+install_cuda_toolkit()
 
 
 torch.set_grad_enabled(False)
