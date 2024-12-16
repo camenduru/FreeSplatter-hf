@@ -1,6 +1,7 @@
 import os
 if 'OMP_NUM_THREADS' not in os.environ:
     os.environ['OMP_NUM_THREADS'] = '16'
+import spaces
 import torch
 import subprocess
 import gradio as gr
@@ -33,6 +34,9 @@ install_cuda_toolkit()
 torch.set_grad_enabled(False)
 device = torch.device('cuda')
 runner = FreeSplatterRunner(device)
+
+run_segmentation = spaces.GPU(partial(runner.run_segmentation, runner))
+run_img_to_3d = spaces.GPU(partial(runner.run_img_to_3d, runner))
 
 
 _HEADER_ = '''
@@ -82,18 +86,18 @@ with gr.Blocks(analytics_enabled=False, title='FreeSplatter Demo') as demo:
             with gr.Tabs() as sub_tabs_img_to_3d:
                 with gr.TabItem('Hunyuan3D Std', id='tab_hunyuan3d_std'):
                     _, var_img_to_3d_hunyuan3d_std = create_interface_img_to_3d(
-                        runner.run_segmentation,
-                        runner.run_img_to_3d, 
+                        run_segmentation,
+                        run_img_to_3d, 
                         model='Hunyuan3D Std')
                 with gr.TabItem('Zero123++ v1.1', id='tab_zero123plus_v11'):
                     _, var_img_to_3d_zero123plus_v11 = create_interface_img_to_3d(
-                        runner.run_segmentation,
-                        runner.run_img_to_3d, 
+                        run_segmentation,
+                        run_img_to_3d, 
                         model='Zero123++ v1.1')
                 with gr.TabItem('Zero123++ v1.2', id='tab_zero123plus_v12'):
                     _, var_img_to_3d_zero123plus_v12 = create_interface_img_to_3d(
-                        runner.run_segmentation,
-                        runner.run_img_to_3d, 
+                        run_segmentation,
+                        run_img_to_3d, 
                         model='Zero123++ v1.2')
 
     gr.Markdown(_CITE_)
