@@ -32,6 +32,8 @@ fpsample
 fast-simplification
 MiniballCpp
 numpy<2.0
+onnxscript
+onnxruntime
 
 git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8
 https://huggingface.co/spaces/TencentARC/FreeSplatter/resolve/main/wheels/diff_gaussian_rasterization-0.0.0-cp310-cp310-linux_x86_64.whl?download=true
