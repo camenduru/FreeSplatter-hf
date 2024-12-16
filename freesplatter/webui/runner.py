@@ -1,4 +1,3 @@
-import spaces
 import os
 import json
 import uuid
@@ -164,7 +163,6 @@ class FreeSplatterRunner:
 
         return image
 
-    @spaces.GPU
     def run_img_to_3d(
         self, 
         image_rgba, 
@@ -242,7 +240,6 @@ class FreeSplatterRunner:
 
         return images_vis, gs_vis_path, video_path, mesh_fine_path, fig
 
-    @spaces.GPU
     def run_views_to_3d(
         self, 
         image_files, 
@@ -494,7 +491,6 @@ class FreeSplatterRunner:
         return fig
     
     # FreeSplatter-S
-    @spaces.GPU
     def run_views_to_scene(
         self, 
         image1,
