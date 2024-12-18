@@ -5,7 +5,7 @@ from .gradio_custommodel3d import CustomModel3D
 from .gradio_customgs import CustomGS
 
 
-def create_interface_img_to_3d(segmentation_api, freesplatter_api, model='Zero123++ v1.2'):
+def create_interface_img_to_3d(freesplatter_api, model='Zero123++ v1.2'):
     default_views = {
         'Zero123++ v1.1': ['Input', 'V2', 'V3', 'V5'],
         'Zero123++ v1.2': ['V1', 'V2', 'V3', 'V5', 'V6'],
@@ -137,14 +137,8 @@ def create_interface_img_to_3d(segmentation_api, freesplatter_api, model='Zero12
                 )
 
         var_dict['run_btn'].click(
-            fn=segmentation_api, 
-            inputs=var_dict['in_image'],
-            outputs=var_dict['fg_image'], 
-            concurrency_id='default_group',
-            api_name='run_segmentation',
-        ).success(
-            fn=partial(freesplatter_api, cache_dir=interface.GRADIO_CACHE),
-            inputs=[var_dict['fg_image'], 
+            fn=freesplatter_api,
+            inputs=[var_dict['in_image'], 
                     var_dict['model'], 
                     var_dict['diffusion_steps'], 
                     var_dict['guidance_scale'], 
@@ -152,7 +146,7 @@ def create_interface_img_to_3d(segmentation_api, freesplatter_api, model='Zero12
                     var_dict['view_indices'],
                     var_dict['gs_type'], 
                     var_dict['mesh_reduction']],
-            outputs=[var_dict['out_multiview'], var_dict['out_gs_vis'], var_dict['out_video'], var_dict['out_mesh'], var_dict['out_pose']], 
+            outputs=[var_dict['fg_image'], var_dict['out_multiview'], var_dict['out_pose'], var_dict['out_gs_vis'], var_dict['out_video'], var_dict['out_mesh']], 
             concurrency_id='default_group',
             api_name='run_image_to_3d',
         )

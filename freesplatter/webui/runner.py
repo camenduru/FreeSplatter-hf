@@ -156,8 +156,6 @@ class FreeSplatterRunner:
         image, 
         do_rembg=True,
     ):
-        torch.cuda.empty_cache()
-
         if do_rembg:
             image = remove_background(image, self.rembg)
 
@@ -165,7 +163,7 @@ class FreeSplatterRunner:
 
     def run_img_to_3d(
         self, 
-        image_rgba, 
+        image,
         model='Zero123++ v1.2', 
         diffusion_steps=30, 
         guidance_scale=4.0,
@@ -175,7 +173,10 @@ class FreeSplatterRunner:
         mesh_reduction=0.5,
         cache_dir=None,
     ):
-        torch.cuda.empty_cache()
+        image_rgba = self.run_segmentation(image)
+
+        res = [image_rgba]
+        yield res + [None] * (6 - len(res))
 
         self.output_dir = os.path.join(cache_dir, f'output_{uuid.uuid4()}')
         os.makedirs(self.output_dir, exist_ok=True)
@@ -224,6 +225,10 @@ class FreeSplatterRunner:
             images = images[[0, 2, 4, 5, 3, 1]]
             alphas = alphas[[0, 2, 4, 5, 3, 1]]
         images_vis = v2.functional.to_pil_image(rearrange(images, 'nm c h w -> c h (nm w)'))
+
+        res += [images_vis]
+        yield res + [None] * (6 - len(res))
+
         images = v2.functional.resize(images, 512, interpolation=3, antialias=True).clamp(0, 1)
         alphas = v2.functional.resize(alphas, 512, interpolation=0, antialias=True).clamp(0, 1)
 
@@ -235,10 +240,11 @@ class FreeSplatterRunner:
         images, alphas = images[view_indices], alphas[view_indices]
         legends = [f'V{i}' if i != 0 else 'Input' for i in view_indices]
 
-        gs_vis_path, video_path, mesh_fine_path, fig = self.run_freesplatter_object(
-            images, alphas, legends=legends, gs_type=gs_type, mesh_reduction=mesh_reduction)
+        for item in self.run_freesplatter_object(
+            images, alphas, legends=legends, gs_type=gs_type, mesh_reduction=mesh_reduction):
+            res += [item]
+            yield res + [None] * (6 - len(res))
 
-        return images_vis, gs_vis_path, video_path, mesh_fine_path, fig
 
     def run_views_to_3d(
         self, 
@@ -248,7 +254,6 @@ class FreeSplatterRunner:
         mesh_reduction=0.5,
         cache_dir=None,
     ):
-        torch.cuda.empty_cache()
 
         self.output_dir = os.path.join(cache_dir, f'output_{uuid.uuid4()}')
         os.makedirs(self.output_dir, exist_ok=True)
@@ -297,7 +302,6 @@ class FreeSplatterRunner:
         gs_type='2DGS', 
         mesh_reduction=0.5,
     ):
-        torch.cuda.empty_cache()
         device = self.device
 
         freesplatter = self.freesplatter_2dgs if gs_type == '2DGS' else self.freesplatter
@@ -313,11 +317,13 @@ class FreeSplatterRunner:
         c2ws_pred, focals_pred = freesplatter.estimate_poses(images, gaussians, masks=alphas, use_first_focal=True, pnp_iter=10)
         fig = self.visualize_cameras_object(images, c2ws_pred, focals_pred, legends=legends)
         t2 = time.time()
+        yield fig
         
         # save gaussians
         gs_vis_path = os.path.join(self.output_dir, 'gs_vis.ply')
         save_gaussian(gaussians, gs_vis_path, freesplatter, opacity_threshold=5e-3, pad_2dgs_scale=True)
         print(f'Save gaussian at {gs_vis_path}')
+        yield gs_vis_path
 
         # render video
         with torch.inference_mode():
@@ -336,6 +342,7 @@ class FreeSplatterRunner:
         save_video(video_frames, video_path, fps=30)
         print(f'Save video at {video_path}')
         t3 = time.time()
+        yield video_path
 
         # extract mesh
         with torch.inference_mode():
@@ -451,7 +458,7 @@ class FreeSplatterRunner:
         print(f'Generate mesh: {t4-t3:.2f} seconds.')
         print(f'Optimize mesh: {t5-t4:.2f} seconds.')
 
-        return gs_vis_path, video_path, mesh_fine_path, fig
+        yield mesh_fine_path
 
     def visualize_cameras_object(
         self, 
@@ -497,7 +504,6 @@ class FreeSplatterRunner:
         image2,
         cache_dir=None,
     ):
-        torch.cuda.empty_cache()
 
         self.output_dir = os.path.join(cache_dir, f'output_{uuid.uuid4()}')
         os.makedirs(self.output_dir, exist_ok=True)
@@ -527,7 +533,6 @@ class FreeSplatterRunner:
         images, 
         legends=None, 
     ):
-        torch.cuda.empty_cache()
 
         freesplatter = self.freesplatter_scene
 
