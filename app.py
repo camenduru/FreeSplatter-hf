@@ -84,3 +84,4 @@ with gr.Blocks(analytics_enabled=False, title='FreeSplatter Demo') as demo:
     gr.Markdown(_CITE_)
 
 demo.launch()
+
