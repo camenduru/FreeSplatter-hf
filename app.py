@@ -1,6 +1,8 @@
+import open3d_zerogpu_fix
 import os
 if 'OMP_NUM_THREADS' not in os.environ:
     os.environ['OMP_NUM_THREADS'] = '16'
+import spaces
 import torch
 import subprocess
 import gradio as gr
@@ -11,28 +13,14 @@ from freesplatter.webui.runner import FreeSplatterRunner
 from freesplatter.webui.tab_img_to_3d import create_interface_img_to_3d
 
 
-def install_cuda_toolkit():
-    CUDA_TOOLKIT_URL = "https://developer.download.nvidia.com/compute/cuda/12.1.0/local_installers/cuda_12.1.0_530.30.02_linux.run"
-    CUDA_TOOLKIT_FILE = "/tmp/%s" % os.path.basename(CUDA_TOOLKIT_URL)
-    subprocess.call(["wget", "-q", CUDA_TOOLKIT_URL, "-O", CUDA_TOOLKIT_FILE])
-    subprocess.call(["chmod", "+x", CUDA_TOOLKIT_FILE])
-    subprocess.call([CUDA_TOOLKIT_FILE, "--silent", "--toolkit"])
-
-    os.environ["CUDA_HOME"] = "/usr/local/cuda"
-    os.environ["PATH"] = "%s/bin:%s" % (os.environ["CUDA_HOME"], os.environ["PATH"])
-    os.environ["LD_LIBRARY_PATH"] = "%s/lib:%s" % (
-        os.environ["CUDA_HOME"],
-        "" if "LD_LIBRARY_PATH" not in os.environ else os.environ["LD_LIBRARY_PATH"],
-    )
-    # Fix: arch_list[-1] += '+PTX'; IndexError: list index out of range
-    os.environ["TORCH_CUDA_ARCH_LIST"] = "8.0;8.6"
-
-install_cuda_toolkit()
-
-
 torch.set_grad_enabled(False)
 device = torch.device('cuda')
 runner = FreeSplatterRunner(device)
+
+
+@spaces.GPU(duration=120)
+def run_img_to_3d(*args):
+    yield from runner.run_img_to_3d(*args, cache_dir=gr.utils.get_upload_folder())
 
 
 _HEADER_ = '''
@@ -82,18 +70,15 @@ with gr.Blocks(analytics_enabled=False, title='FreeSplatter Demo') as demo:
             with gr.Tabs() as sub_tabs_img_to_3d:
                 with gr.TabItem('Hunyuan3D Std', id='tab_hunyuan3d_std'):
                     _, var_img_to_3d_hunyuan3d_std = create_interface_img_to_3d(
-                        runner.run_segmentation,
-                        runner.run_img_to_3d, 
+                        run_img_to_3d, 
                         model='Hunyuan3D Std')
                 with gr.TabItem('Zero123++ v1.1', id='tab_zero123plus_v11'):
                     _, var_img_to_3d_zero123plus_v11 = create_interface_img_to_3d(
-                        runner.run_segmentation,
-                        runner.run_img_to_3d, 
+                        run_img_to_3d, 
                         model='Zero123++ v1.1')
                 with gr.TabItem('Zero123++ v1.2', id='tab_zero123plus_v12'):
                     _, var_img_to_3d_zero123plus_v12 = create_interface_img_to_3d(
-                        runner.run_segmentation,
-                        runner.run_img_to_3d, 
+                        run_img_to_3d, 
                         model='Zero123++ v1.2')
 
     gr.Markdown(_CITE_)
