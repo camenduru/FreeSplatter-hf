@@ -14,3 +14,4 @@ short_description: Reconstruct 3D Gaussians from unposes images.
 Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
 
 Paper: https://huggingface.co/papers/2412.09573
+
