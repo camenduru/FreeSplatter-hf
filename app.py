@@ -33,11 +33,8 @@ _IMG_TO_3D_HELP_ = '''
 💡💡💡**Usage Tips:**
 - This demo supports various multi-view diffusion models, including [Hunyuan3D](https://github.com/Tencent/Hunyuan3D-1) Std and [Zero123++](https://github.com/SUDO-AI-3D/zero123plus) v1.1/v1.2. You can try different models to get the best result.
 - Try clicking the \U0001f3b2\ufe0f button to use a different `Random seed` (default: 42) for diverse outputs.
-- In most cases, using `2DGS` leads to better mesh geometry than `3DGS`. Please refer to the [2DGS paper](https://arxiv.org/abs/2403.17888).
+- In most cases, using `2DGS` leads to better mesh geometry than `3DGS`. Please refer to [2DGS paper](https://arxiv.org/abs/2403.17888).
 - You can adjust the views used for reconstruction to alleviate the blurry texture problem caused by multi-view inconsistency.
-
-❗️❗️❗️**NOTE:**  
-We are dealing with some bugs related to the ZeroGPU environment, stay tuned!
 '''
 
 _CITE_ = r"""
