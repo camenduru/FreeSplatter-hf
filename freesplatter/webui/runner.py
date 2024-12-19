@@ -75,7 +75,8 @@ class FreeSplatterRunner:
 
         # background remover
         self.rembg = AutoModelForImageSegmentation.from_pretrained(
-            "ZhengPeng7/BiRefNet",
+            # "ZhengPeng7/BiRefNet",
+            "briaai/RMBG-2.0",
             trust_remote_code=True,
         ).to(device)
         self.rembg.eval()
