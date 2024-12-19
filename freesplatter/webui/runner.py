@@ -4,9 +4,9 @@ import uuid
 import time
 import rembg
 import numpy as np
+import trimesh
 import torch
 import fpsample
-import fast_simplification
 import matplotlib.pyplot as plt
 cmap = plt.get_cmap("hsv")
 from torchvision.transforms import v2
@@ -22,8 +22,7 @@ from transformers import AutoModelForImageSegmentation
 from diffusers import DiffusionPipeline, EulerAncestralDiscreteScheduler
 
 from freesplatter.hunyuan.hunyuan3d_mvd_std_pipeline import HunYuan3D_MVD_Std_Pipeline
-from freesplatter.utils.mesh import Mesh
-from freesplatter.utils.mesh_renderer import MeshRenderer
+from freesplatter.utils.mesh_optim import optimize_mesh
 from freesplatter.utils.camera_util import *
 from freesplatter.utils.recon_util import *
 from freesplatter.utils.infer_util import *
@@ -78,7 +77,7 @@ class FreeSplatterRunner:
         self.rembg = AutoModelForImageSegmentation.from_pretrained(
             "ZhengPeng7/BiRefNet",
             trust_remote_code=True,
-        )
+        ).to(device)
         self.rembg.eval()
         # self.rembg = rembg.new_session('birefnet-general')
 
@@ -141,14 +140,6 @@ class FreeSplatterRunner:
                 state_dict[key] = f.get_tensor(key)
         model.load_state_dict(state_dict, strict=True)
         self.freesplatter_scene = model.eval().to(device)
-
-        # mesh optimizer
-        # self.mesh_renderer = MeshRenderer(
-        #     near=0.01,
-        #     far=100,
-        #     ssaa=1,
-        #     texture_filter='linear-mipmap-linear',
-        #     device=device).to(device)
 
     @torch.inference_mode()
     def run_segmentation(
@@ -379,50 +370,6 @@ class FreeSplatterRunner:
             t4 = time.time()
 
         # optimize texture
-        # cam_pos = c2ws_fusion[:, :3, 3].cpu().numpy()
-        # cam_inds = torch.from_numpy(fpsample.fps_sampling(cam_pos, 16).astype(int)).to(device=device)
-
-        # alphas_bake = alphas_fusion[cam_inds]
-        # images_bake = (images_fusion[cam_inds] - (1 - alphas_bake)) / alphas_bake.clamp(min=1e-6)
-
-        # out_mesh = Mesh.load(str(mesh_path), auto_uv=False, device='cpu')
-        # max_faces = 50000
-        # mesh_reduction = max(1 - max_faces / out_mesh.f.shape[0], mesh_reduction)
-        # mesh_verts_, mesh_faces_ = fast_simplification.simplify(
-        #     out_mesh.v.numpy(), out_mesh.f.numpy(), target_reduction=mesh_reduction)
-        # mesh_verts = out_mesh.v.new_tensor(mesh_verts_, dtype=torch.float32).requires_grad_(False)
-        # mesh_faces = out_mesh.f.new_tensor(mesh_faces_).requires_grad_(False)
-        # out_mesh = Mesh(v=mesh_verts, f=mesh_faces)
-        # out_mesh.auto_normal()
-        # out_mesh.auto_uv()
-        # out_mesh = out_mesh.to(device)
-
-        # intrinsics = fxfycxcy_fusion[0:1].clone()
-        # intrinsics[..., [0, 2]] *= images_bake.shape[-2]
-        # intrinsics[..., [1, 3]] *= images_bake.shape[-3]
-
-        # out_mesh = self.mesh_renderer.bake_multiview(
-        #     [out_mesh], 
-        #     images_bake.unsqueeze(0), 
-        #     alphas_bake.unsqueeze(0), 
-        #     c2ws_fusion[cam_inds].unsqueeze(0), 
-        #     intrinsics.unsqueeze(0),
-        # )[0]
-        # mesh_fine_path = os.path.join(self.output_dir, 'mesh.glb')
-        # # align mesh orientation
-        # out_mesh.v = out_mesh.v.clone()
-        # out_mesh.vn = out_mesh.vn.clone()
-        # out_mesh.v[..., 0] = -out_mesh.v[..., 0]
-        # out_mesh.vn[..., 0] = -out_mesh.vn[..., 0]
-        # out_mesh.v[..., [1, 2]] = out_mesh.v[..., [2, 1]]
-        # out_mesh.vn[..., [1, 2]] = out_mesh.vn[..., [2, 1]]
-
-        # out_mesh.write(mesh_fine_path, flip_yz=False)
-        # print(f"Save optimized mesh at {mesh_fine_path}")
-        # t5 = time.time()
-
-        # optimize texture
-        from freesplatter.utils.mesh_optim import optimize_mesh
         cam_pos = c2ws_fusion[:, :3, 3].cpu().numpy()
         cam_inds = torch.from_numpy(fpsample.fps_sampling(cam_pos, 16).astype(int)).to(device=device)
 
@@ -436,7 +383,7 @@ class FreeSplatterRunner:
         intrinsics[:, 1, 1] = fxfycxcy[:, 1]
         intrinsics[:, 1, 2] = fxfycxcy[:, 3]
 
-        out_mesh = Mesh.load(str(mesh_path), auto_uv=False, device='cpu')
+        out_mesh = trimesh.load(str(mesh_path), process=False)
         out_mesh = optimize_mesh(
             out_mesh, 
             images_bake, 
@@ -467,6 +414,7 @@ class FreeSplatterRunner:
         focal_length, 
         legends=None,
     ):
+        images = v2.functional.resize(images, 128, interpolation=3, antialias=True).clamp(0, 1)
         images = (images.permute(0, 2, 3, 1).detach().cpu().numpy() * 255).astype(np.uint8)
 
         cam2world = create_camera_to_world(torch.tensor([0, -2, 0]), camera_system='opencv').to(c2ws)
@@ -596,6 +544,7 @@ class FreeSplatterRunner:
         focal_length, 
         legends=None,
     ):
+        images = v2.functional.resize(images, 128, interpolation=3, antialias=True).clamp(0, 1)
         images = (images.permute(0, 2, 3, 1).detach().cpu().numpy() * 255).astype(np.uint8)
 
         c2ws = c2ws.detach().cpu().numpy()
