@@ -27,10 +27,8 @@ plyfile
 open3d==0.18.0
 ninja
 xatlas
-pygltflib
 fpsample
 fast-simplification
-MiniballCpp
 numpy<2.0
 onnxscript
 onnxruntime
