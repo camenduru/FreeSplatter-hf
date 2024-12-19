@@ -92,9 +92,9 @@ def create_interface_img_to_3d(freesplatter_api, model='Zero123++ v1.2'):
                         var_dict['mesh_reduction'] = gr.Slider(
                             label="Mesh simplification ratio",
                             info='Larger ratio leads to less faces',
-                            minimum=0.7,
+                            minimum=0.8,
                             maximum=0.95,
-                            value=0.8,
+                            value=0.95,
                             step=0.05,
                         )
                 with gr.Row(equal_height=False):
