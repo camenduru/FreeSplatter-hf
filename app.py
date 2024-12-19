@@ -25,7 +25,7 @@ def run_img_to_3d(*args):
 
 _HEADER_ = '''
 # FreeSplatter 🤗 Gradio Demo
-\n\nOfficial demo of the paper [FreeSplatter: Pose-free Gaussian Splatting for Sparse-view 3D Reconstruction](https://arxiv.org/abs/2404.07191). [[Github]](https://github.com/TencentARC/FreeSplatter)  
+\n\nOfficial demo of the paper [FreeSplatter: Pose-free Gaussian Splatting for Sparse-view 3D Reconstruction](https://bluestyle97.github.io/projects/freesplatter/). [[Github]](https://github.com/TencentARC/FreeSplatter)  
 **FreeSplatter** is a feed-forward framework capable of generating high-quality 3D Gaussians from **uncalibrated** sparse-view images and recovering their camera parameters in mere seconds.  
 '''
 
